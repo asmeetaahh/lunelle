@@ -8,6 +8,7 @@ import Insights from './pages/Insights'
 import Journal from './pages/Journal'
 import MemoryMatch from './pages/MemoryMatch'
 import PagePlaceholder from './pages/PagePlaceholder'
+import Profile from './pages/Profile'
 import Relax from './pages/Relax'
 import { ThemeProvider } from './theme/ThemeContext'
 
@@ -19,6 +20,7 @@ const IMPLEMENTED_ROUTES = [
   '/ai-companion',
   '/relax',
   '/memory-match',
+  '/profile',
 ]
 
 function App() {
@@ -35,6 +37,7 @@ function App() {
             <Route path="ai-companion" element={<AiCompanion />} />
             <Route path="relax" element={<Relax />} />
             <Route path="memory-match" element={<MemoryMatch />} />
+            <Route path="profile" element={<Profile />} />
             {navItems
               .filter((item) => !IMPLEMENTED_ROUTES.includes(item.to))
               .map(({ to, label, icon }) => (
