@@ -1,9 +1,12 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import AppShell from './components/layout/AppShell'
 import { navItems } from './lib/navItems'
+import Calendar from './pages/Calendar'
 import Home from './pages/Home'
 import PagePlaceholder from './pages/PagePlaceholder'
 import { ThemeProvider } from './theme/ThemeContext'
+
+const IMPLEMENTED_ROUTES = ['/home', '/calendar']
 
 function App() {
   return (
@@ -13,8 +16,9 @@ function App() {
           <Route element={<AppShell />}>
             <Route index element={<Navigate to="/home" replace />} />
             <Route path="home" element={<Home />} />
+            <Route path="calendar" element={<Calendar />} />
             {navItems
-              .filter((item) => item.to !== '/home')
+              .filter((item) => !IMPLEMENTED_ROUTES.includes(item.to))
               .map(({ to, label, icon }) => (
                 <Route
                   key={to}
