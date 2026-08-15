@@ -1,61 +1,123 @@
-let journals = [];
-let nextId = 1;
+import { supabase } from "./supabase.js";
 
-export function getAllJournals() {
-  return journals;
-}
-
-export function getJournalById(id) {
-  return journals.find((journal) => journal.id === id);
-}
-
-export function createJournal(data) {
-  const journal = {
-    id: nextId++,
-    entry: data.entry,
-    mood: data.mood ?? null,
-    symptoms: data.symptoms ?? [],
-    cycleDay: data.cycleDay ?? null,
-    cycleLength: data.cycleLength ?? null,
-    phase: data.phase ?? null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-
-  journals.push(journal);
-
-  return journal;
-}
-
-export function updateJournal(id, data) {
-  const journal = getJournalById(id);
-
+function formatJournal(journal) {
   if (!journal) {
     return null;
   }
 
-  if (data.entry !== undefined) journal.entry = data.entry;
-  if (data.mood !== undefined) journal.mood = data.mood;
-  if (data.symptoms !== undefined) journal.symptoms = data.symptoms;
-  if (data.cycleDay !== undefined) journal.cycleDay = data.cycleDay;
-  if (data.cycleLength !== undefined) {
-    journal.cycleLength = data.cycleLength;
-  }
-  if (data.phase !== undefined) journal.phase = data.phase;
-
-  journal.updatedAt = new Date().toISOString();
-
-  return journal;
+  return {
+    id: journal.id,
+    entry: journal.entry,
+    mood: journal.mood,
+    symptoms: journal.symptoms ?? [],
+    cycleDay: journal.cycle_day,
+    cycleLength: journal.cycle_length,
+    phase: journal.phase,
+    createdAt: journal.created_at,
+    updatedAt: journal.updated_at,
+  };
 }
 
-export function deleteJournal(id) {
-  const index = journals.findIndex((journal) => journal.id === id);
+export async function getAllJournals() {
+  const { data, error } = await supabase
+    .from("journals")
+    .select("*")
+    .order("created_at", { ascending: false });
 
-  if (index === -1) {
-    return false;
+  if (error) {
+    throw error;
   }
 
-  journals.splice(index, 1);
+  return data.map(formatJournal);
+}
 
-  return true;
+export async function getJournalById(id) {
+  const { data, error } = await supabase
+    .from("journals")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return formatJournal(data);
+}
+
+export async function createJournal(data) {
+  const { data: journal, error } = await supabase
+    .from("journals")
+    .insert({
+      entry: data.entry,
+      mood: data.mood ?? null,
+      symptoms: data.symptoms ?? [],
+      cycle_day: data.cycleDay ?? null,
+      cycle_length: data.cycleLength ?? null,
+      phase: data.phase ?? null,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return formatJournal(journal);
+}
+
+export async function updateJournal(id, data) {
+  const updates = {};
+
+  if (data.entry !== undefined) {
+    updates.entry = data.entry;
+  }
+
+  if (data.mood !== undefined) {
+    updates.mood = data.mood;
+  }
+
+  if (data.symptoms !== undefined) {
+    updates.symptoms = data.symptoms;
+  }
+
+  if (data.cycleDay !== undefined) {
+    updates.cycle_day = data.cycleDay;
+  }
+
+  if (data.cycleLength !== undefined) {
+    updates.cycle_length = data.cycleLength;
+  }
+
+  if (data.phase !== undefined) {
+    updates.phase = data.phase;
+  }
+
+  const { data: journal, error } = await supabase
+    .from("journals")
+    .update(updates)
+    .eq("id", id)
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return formatJournal(journal);
+}
+
+export async function deleteJournal(id) {
+  const { data, error } = await supabase
+    .from("journals")
+    .delete()
+    .eq("id", id)
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return Boolean(data);
 }

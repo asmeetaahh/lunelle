@@ -33,7 +33,7 @@ router.post("/chat", async (req, res) => {
         });
       }
 
-      const journal = getJournalById(id);
+      const journal = await getJournalById(id);
 
       if (!journal) {
         return res.status(404).json({
