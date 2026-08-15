@@ -1,27 +1,33 @@
 import { Pencil } from 'lucide-react'
 import { useState } from 'react'
 import bunnyMark from '../../assets/Lunelle bunny.png'
+import { getProfileSettings, saveProfileSettings } from '../../lib/profileSettings'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
 
 function ProfileHeaderCard() {
-  const [name, setName] = useState('Asmita')
-  const [subtitle, setSubtitle] = useState('Tracking my cycle, one gentle day at a time. 🌸')
+  const [settings, setSettings] = useState(() => getProfileSettings())
   const [isEditing, setIsEditing] = useState(false)
-  const [draftName, setDraftName] = useState(name)
-  const [draftSubtitle, setDraftSubtitle] = useState(subtitle)
+  const [draftName, setDraftName] = useState(settings.displayName)
+  const [draftSubtitle, setDraftSubtitle] = useState(settings.subtitle)
 
   const startEditing = () => {
-    setDraftName(name)
-    setDraftSubtitle(subtitle)
+    setDraftName(settings.displayName)
+    setDraftSubtitle(settings.subtitle)
     setIsEditing(true)
   }
 
   const cancelEditing = () => setIsEditing(false)
 
   const saveEditing = () => {
-    setName(draftName.trim() || name)
-    setSubtitle(draftSubtitle.trim() || subtitle)
+    const next = {
+      ...getProfileSettings(),
+      displayName: draftName.trim() || settings.displayName,
+      subtitle: draftSubtitle.trim() || settings.subtitle,
+    }
+
+    saveProfileSettings(next)
+    setSettings(next)
     setIsEditing(false)
   }
 
@@ -63,8 +69,8 @@ function ProfileHeaderCard() {
         </div>
       ) : (
         <div className="flex-1">
-          <h2 className="text-2xl font-bold text-ink">{name}</h2>
-          <p className="mt-1 text-sm text-ink-muted">{subtitle}</p>
+          <h2 className="text-2xl font-bold text-ink">{settings.displayName}</h2>
+          <p className="mt-1 text-sm text-ink-muted">{settings.subtitle}</p>
           <button
             type="button"
             onClick={startEditing}

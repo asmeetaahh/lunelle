@@ -36,7 +36,7 @@ function CycleSettingsCard() {
           <h2 className="text-xl font-bold text-ink">Cycle settings</h2>
           <p className="mt-1 text-sm text-ink-muted">Helps Lunelle personalize your predictions.</p>
         </div>
-        {!isEditing && <Badge>Sample data</Badge>}
+        {!isEditing && <Badge>Live data</Badge>}
       </div>
 
       {isEditing ? (

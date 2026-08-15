@@ -7,10 +7,12 @@ import BackgroundDecor from '../components/decorative/BackgroundDecor'
 import Card from '../components/ui/Card'
 import { addDays, daysBetween, getCycleDayInfo, isSameDay, toISODate } from '../lib/cycle'
 import { getCycleSettings } from '../lib/cycleSettings'
+import { getProfileSettings } from '../lib/profileSettings'
 
 function Calendar() {
   const today = useMemo(() => new Date(), [])
   const cycleSettings = useMemo(() => getCycleSettings(), [])
+  const weekStartsOn = useMemo(() => (getProfileSettings().weekStart === 'monday' ? 1 : 0), [])
 
   const cycle = useMemo(() => {
     const [year, month, day] = cycleSettings.lastPeriodDate.split('-').map(Number)
@@ -78,6 +80,7 @@ function Calendar() {
             selectedDate={selectedDate}
             loggedDates={loggedDates}
             cycle={cycle}
+            weekStartsOn={weekStartsOn}
             onPrevMonth={goToPrevMonth}
             onNextMonth={goToNextMonth}
             onToday={goToToday}

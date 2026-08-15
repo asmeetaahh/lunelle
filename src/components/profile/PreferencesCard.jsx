@@ -1,13 +1,19 @@
 import { Bell, HeartHandshake, Palette } from 'lucide-react'
 import { useState } from 'react'
+import { getProfileSettings, saveProfileSettings } from '../../lib/profileSettings'
 import Card from '../ui/Card'
 import ThemeToggle from '../ui/ThemeToggle'
 import ToggleSwitch from '../ui/ToggleSwitch'
 import PreferenceRow from './PreferenceRow'
 
 function PreferencesCard() {
-  const [notifications, setNotifications] = useState(true)
-  const [gentleReminders, setGentleReminders] = useState(true)
+  const [settings, setSettings] = useState(() => getProfileSettings())
+
+  const updateSetting = (key, value) => {
+    const next = { ...getProfileSettings(), [key]: value }
+    saveProfileSettings(next)
+    setSettings(next)
+  }
 
   return (
     <Card>
@@ -18,12 +24,16 @@ function PreferencesCard() {
           <ThemeToggle />
         </PreferenceRow>
         <PreferenceRow icon={Bell} label="Notifications" description="Cycle & reminder alerts">
-          <ToggleSwitch checked={notifications} onChange={setNotifications} label="Notifications" />
+          <ToggleSwitch
+            checked={settings.notifications}
+            onChange={(checked) => updateSetting('notifications', checked)}
+            label="Notifications"
+          />
         </PreferenceRow>
         <PreferenceRow icon={HeartHandshake} label="Gentle reminders" description="Soft check-in nudges">
           <ToggleSwitch
-            checked={gentleReminders}
-            onChange={setGentleReminders}
+            checked={settings.gentleReminders}
+            onChange={(checked) => updateSetting('gentleReminders', checked)}
             label="Gentle reminders"
           />
         </PreferenceRow>

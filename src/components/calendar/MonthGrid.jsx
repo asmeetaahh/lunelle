@@ -1,5 +1,5 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { WEEKDAY_LABELS, formatMonthYear, getMonthMatrix, isSameDay, toISODate } from '../../lib/cycle'
+import { formatMonthYear, getMonthMatrix, getWeekdayLabels, isSameDay, toISODate } from '../../lib/cycle'
 import DayCell from './DayCell'
 
 function MonthGrid({
@@ -8,12 +8,14 @@ function MonthGrid({
   selectedDate,
   loggedDates,
   cycle,
+  weekStartsOn,
   onPrevMonth,
   onNextMonth,
   onToday,
   onSelectDate,
 }) {
-  const weeks = getMonthMatrix(viewDate.getFullYear(), viewDate.getMonth())
+  const weeks = getMonthMatrix(viewDate.getFullYear(), viewDate.getMonth(), weekStartsOn)
+  const weekdayLabels = getWeekdayLabels(weekStartsOn)
 
   return (
     <div>
@@ -47,7 +49,7 @@ function MonthGrid({
       </div>
 
       <div className="mt-6 grid grid-cols-7 gap-1 text-center text-xs font-semibold text-ink-muted sm:gap-2">
-        {WEEKDAY_LABELS.map((label) => (
+        {weekdayLabels.map((label) => (
           <div key={label} className="py-1">
             {label}
           </div>

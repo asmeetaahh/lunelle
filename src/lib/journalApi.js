@@ -28,3 +28,14 @@ export async function fetchJournalEntries() {
 
   return (data.journals ?? []).map(normalizeJournalEntry)
 }
+
+export async function deleteJournalEntry(id) {
+  const response = await fetch(`${API_BASE_URL}/api/journal/${id}`, {
+    method: 'DELETE',
+  })
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}))
+    throw new Error(data.error || 'Could not delete journal entry.')
+  }
+}

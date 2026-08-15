@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { getProfileSettings, saveProfileSettings } from '../../lib/profileSettings'
 import Card from '../ui/Card'
 
 const WEEK_START_OPTIONS = [
@@ -7,7 +8,13 @@ const WEEK_START_OPTIONS = [
 ]
 
 function AppPreferencesCard() {
-  const [weekStart, setWeekStart] = useState('sunday')
+  const [weekStart, setWeekStart] = useState(() => getProfileSettings().weekStart)
+
+  const selectWeekStart = (key) => {
+    const next = { ...getProfileSettings(), weekStart: key }
+    saveProfileSettings(next)
+    setWeekStart(key)
+  }
 
   return (
     <Card>
@@ -23,7 +30,7 @@ function AppPreferencesCard() {
               <button
                 key={option.key}
                 type="button"
-                onClick={() => setWeekStart(option.key)}
+                onClick={() => selectWeekStart(option.key)}
                 aria-pressed={isSelected}
                 className={[
                   'rounded-full px-4 py-2 text-sm font-semibold transition-colors',

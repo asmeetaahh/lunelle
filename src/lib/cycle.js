@@ -1,5 +1,10 @@
 export const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
+// Rotates the label row to match a 0 (Sunday) or 1 (Monday) week start.
+export function getWeekdayLabels(weekStartsOn = 0) {
+  return [...WEEKDAY_LABELS.slice(weekStartsOn), ...WEEKDAY_LABELS.slice(0, weekStartsOn)]
+}
+
 export function addDays(date, amount) {
   const next = new Date(date)
   next.setDate(next.getDate() + amount)
@@ -40,9 +45,10 @@ export function formatFullDate(date) {
 
 // Returns a fixed 6x7 grid of dates (including leading/trailing days from
 // adjacent months) so every month renders at the same height.
-export function getMonthMatrix(year, month) {
+export function getMonthMatrix(year, month, weekStartsOn = 0) {
   const firstOfMonth = new Date(year, month, 1)
-  const gridStart = addDays(firstOfMonth, -firstOfMonth.getDay())
+  const offset = (firstOfMonth.getDay() - weekStartsOn + 7) % 7
+  const gridStart = addDays(firstOfMonth, -offset)
 
   const weeks = []
   let cursor = gridStart
