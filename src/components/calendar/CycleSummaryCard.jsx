@@ -8,7 +8,7 @@ function CycleSummaryCard({ cycleDayNumber, cycleLength, daysUntilNextPeriod, on
     <Card>
       <div className="flex items-start justify-between gap-4">
         <h2 className="text-xl font-bold text-ink">Cycle summary</h2>
-        <Badge>Sample data</Badge>
+        <Badge>Live data</Badge>
       </div>
 
       <dl className="mt-6 divide-y divide-border">

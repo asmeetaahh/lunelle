@@ -7,6 +7,7 @@ import BackgroundDecor from '../components/decorative/BackgroundDecor'
 import Card from '../components/ui/Card'
 import { addDays, daysBetween, getCycleDayInfo, isSameDay, toISODate } from '../lib/cycle'
 import { getCycleSettings } from '../lib/cycleSettings'
+import { getLoggedPeriodDates, saveLoggedPeriodDates } from '../lib/loggedPeriodDates'
 import { getProfileSettings } from '../lib/profileSettings'
 
 function Calendar() {
@@ -26,13 +27,7 @@ function Calendar() {
 
   const [viewDate, setViewDate] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1))
   const [selectedDate, setSelectedDate] = useState(today)
-  const [loggedDates, setLoggedDates] = useState(() => {
-    const initial = new Set()
-    for (let i = 0; i < cycle.periodLength; i += 1) {
-      initial.add(toISODate(addDays(cycle.lastPeriodStart, i)))
-    }
-    return initial
-  })
+  const [loggedDates, setLoggedDates] = useState(() => new Set(getLoggedPeriodDates()))
 
   const goToPrevMonth = () =>
     setViewDate((current) => new Date(current.getFullYear(), current.getMonth() - 1, 1))
@@ -52,6 +47,7 @@ function Calendar() {
       } else {
         next.add(key)
       }
+      saveLoggedPeriodDates([...next])
       return next
     })
   }
