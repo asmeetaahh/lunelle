@@ -7,9 +7,10 @@ import Home from './pages/Home'
 import Insights from './pages/Insights'
 import Journal from './pages/Journal'
 import PagePlaceholder from './pages/PagePlaceholder'
+import Relax from './pages/Relax'
 import { ThemeProvider } from './theme/ThemeContext'
 
-const IMPLEMENTED_ROUTES = ['/home', '/calendar', '/insights', '/journal', '/ai-companion']
+const IMPLEMENTED_ROUTES = ['/home', '/calendar', '/insights', '/journal', '/ai-companion', '/relax']
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
             <Route path="insights" element={<Insights />} />
             <Route path="journal" element={<Journal />} />
             <Route path="ai-companion" element={<AiCompanion />} />
+            <Route path="relax" element={<Relax />} />
             {navItems
               .filter((item) => !IMPLEMENTED_ROUTES.includes(item.to))
               .map(({ to, label, icon }) => (
