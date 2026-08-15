@@ -1,1 +1,101 @@
 @import "tailwindcss";
+
+:root {
+  color-scheme: light;
+
+  --lunelle-canvas: #fdf3f8;
+  --lunelle-surface: #ffffff;
+  --lunelle-surface-alt: #fdf1f7;
+  --lunelle-border: #f4dced;
+  --lunelle-ink: #402138;
+  --lunelle-ink-muted: #8a6b85;
+  --lunelle-primary: #ec4899;
+  --lunelle-primary-soft: #fbcfe8;
+  --lunelle-accent: #a78bfa;
+  --lunelle-accent-soft: #ede9fe;
+  --lunelle-warn-bg: #fef3c7;
+  --lunelle-warn-text: #92400e;
+}
+
+[data-theme='moonlight'] {
+  color-scheme: dark;
+
+  --lunelle-canvas: #180f26;
+  --lunelle-surface: #241733;
+  --lunelle-surface-alt: #2c1c3d;
+  --lunelle-border: #3c2a52;
+  --lunelle-ink: #f3e8ff;
+  --lunelle-ink-muted: #b7a2cf;
+  --lunelle-primary: #f472b6;
+  --lunelle-primary-soft: #5b2a55;
+  --lunelle-accent: #c4b5fd;
+  --lunelle-accent-soft: #3a2a5c;
+  --lunelle-warn-bg: #4a3a1a;
+  --lunelle-warn-text: #fbbf24;
+}
+
+@theme inline {
+  --color-canvas: var(--lunelle-canvas);
+  --color-surface: var(--lunelle-surface);
+  --color-surface-alt: var(--lunelle-surface-alt);
+  --color-border: var(--lunelle-border);
+  --color-ink: var(--lunelle-ink);
+  --color-ink-muted: var(--lunelle-ink-muted);
+  --color-primary: var(--lunelle-primary);
+  --color-primary-soft: var(--lunelle-primary-soft);
+  --color-accent: var(--lunelle-accent);
+  --color-accent-soft: var(--lunelle-accent-soft);
+  --color-warn-bg: var(--lunelle-warn-bg);
+  --color-warn-text: var(--lunelle-warn-text);
+}
+
+body {
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+@keyframes lunelle-float {
+  0%, 100% {
+    transform: translate(calc(var(--decor-drift, 1) * -6px), 16px) scale(0.85);
+    opacity: calc(var(--decor-peak, 0.6) * 0.2);
+  }
+  50% {
+    transform: translate(calc(var(--decor-drift, 1) * 6px), -28px) scale(1.1);
+    opacity: var(--decor-peak, 0.6);
+  }
+}
+
+@keyframes lunelle-twinkle {
+  0%, 100% {
+    transform: translate(calc(var(--decor-drift, 1) * -3px), 4px) scale(0.6);
+    opacity: calc(var(--decor-peak, 0.6) * 0.15);
+    filter: drop-shadow(0 0 0 currentColor);
+  }
+  50% {
+    transform: translate(calc(var(--decor-drift, 1) * 3px), -9px) scale(1.3);
+    opacity: var(--decor-peak, 0.6);
+    filter: drop-shadow(0 0 6px currentColor);
+  }
+}
+
+.animate-lunelle-float {
+  animation-name: lunelle-float;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-fill-mode: backwards;
+}
+
+.animate-lunelle-twinkle {
+  animation-name: lunelle-twinkle;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-fill-mode: backwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-lunelle-float,
+  .animate-lunelle-twinkle {
+    animation: none;
+  }
+}
