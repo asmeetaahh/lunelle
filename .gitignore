@@ -23,3 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 CLAUDE.md
+
+# Environment variables
+.env
+.env.*
+!.env.example
