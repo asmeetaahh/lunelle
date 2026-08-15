@@ -3,10 +3,11 @@ import AppShell from './components/layout/AppShell'
 import { navItems } from './lib/navItems'
 import Calendar from './pages/Calendar'
 import Home from './pages/Home'
+import Insights from './pages/Insights'
 import PagePlaceholder from './pages/PagePlaceholder'
 import { ThemeProvider } from './theme/ThemeContext'
 
-const IMPLEMENTED_ROUTES = ['/home', '/calendar']
+const IMPLEMENTED_ROUTES = ['/home', '/calendar', '/insights']
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
             <Route index element={<Navigate to="/home" replace />} />
             <Route path="home" element={<Home />} />
             <Route path="calendar" element={<Calendar />} />
+            <Route path="insights" element={<Insights />} />
             {navItems
               .filter((item) => !IMPLEMENTED_ROUTES.includes(item.to))
               .map(({ to, label, icon }) => (

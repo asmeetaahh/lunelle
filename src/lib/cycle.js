@@ -81,3 +81,25 @@ export function getCycleDayInfo(date, { lastPeriodStart, cycleLength, periodLeng
     isOvulationDay,
   }
 }
+
+// Names the four broad phases of a cycle and their day-range boundaries
+// (1-based, inclusive) so both the day-by-day calendar and the higher-level
+// insights views can describe "where" a given cycle day falls consistently.
+export function getCyclePhaseRanges({ cycleLength, periodLength }) {
+  const ovulationDay = cycleLength - 14 + 1
+
+  return [
+    { phase: 'Period', startDay: 1, endDay: periodLength },
+    { phase: 'Follicular', startDay: periodLength + 1, endDay: ovulationDay - 1 },
+    { phase: 'Ovulation', startDay: ovulationDay, endDay: ovulationDay },
+    { phase: 'Luteal', startDay: ovulationDay + 1, endDay: cycleLength },
+  ]
+}
+
+export function getCyclePhase(cycleDayNumber, cycle) {
+  const ranges = getCyclePhaseRanges(cycle)
+  const match = ranges.find(
+    (range) => cycleDayNumber >= range.startDay && cycleDayNumber <= range.endDay,
+  )
+  return match ? match.phase : ranges[ranges.length - 1].phase
+}
