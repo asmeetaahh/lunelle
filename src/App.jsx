@@ -4,10 +4,11 @@ import { navItems } from './lib/navItems'
 import Calendar from './pages/Calendar'
 import Home from './pages/Home'
 import Insights from './pages/Insights'
+import Journal from './pages/Journal'
 import PagePlaceholder from './pages/PagePlaceholder'
 import { ThemeProvider } from './theme/ThemeContext'
 
-const IMPLEMENTED_ROUTES = ['/home', '/calendar', '/insights']
+const IMPLEMENTED_ROUTES = ['/home', '/calendar', '/insights', '/journal']
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
             <Route path="home" element={<Home />} />
             <Route path="calendar" element={<Calendar />} />
             <Route path="insights" element={<Insights />} />
+            <Route path="journal" element={<Journal />} />
             {navItems
               .filter((item) => !IMPLEMENTED_ROUTES.includes(item.to))
               .map(({ to, label, icon }) => (
