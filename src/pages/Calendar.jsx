@@ -6,18 +6,21 @@ import SelectedDayPanel from '../components/calendar/SelectedDayPanel'
 import BackgroundDecor from '../components/decorative/BackgroundDecor'
 import Card from '../components/ui/Card'
 import { addDays, daysBetween, getCycleDayInfo, isSameDay, toISODate } from '../lib/cycle'
-
-function buildSampleCycle(today) {
-  return {
-    lastPeriodStart: addDays(today, -20),
-    cycleLength: 29,
-    periodLength: 5,
-  }
-}
+import { getCycleSettings } from '../lib/cycleSettings'
 
 function Calendar() {
   const today = useMemo(() => new Date(), [])
-  const cycle = useMemo(() => buildSampleCycle(today), [today])
+  const cycleSettings = useMemo(() => getCycleSettings(), [])
+
+  const cycle = useMemo(() => {
+    const [year, month, day] = cycleSettings.lastPeriodDate.split('-').map(Number)
+
+    return {
+      lastPeriodStart: new Date(year, month - 1, day),
+      cycleLength: cycleSettings.cycleLength,
+      periodLength: cycleSettings.periodLength,
+    }
+  }, [cycleSettings])
 
   const [viewDate, setViewDate] = useState(() => new Date(today.getFullYear(), today.getMonth(), 1))
   const [selectedDate, setSelectedDate] = useState(today)

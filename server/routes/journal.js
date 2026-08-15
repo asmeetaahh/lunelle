@@ -32,13 +32,7 @@ router.get("/", async (req, res) => {
 // GET /api/journal/:id
 router.get("/:id", async (req, res) => {
   try {
-    const id = Number(req.params.id);
-
-    if (!Number.isInteger(id) || id <= 0) {
-      return res.status(400).json({
-        error: "Invalid journal ID",
-      });
-    }
+    const id = req.params.id;
 
     const journal = await getJournalById(id);
 
@@ -63,13 +57,14 @@ router.get("/:id", async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     const {
-      entry,
-      mood,
-      symptoms,
-      cycleDay,
-      cycleLength,
-      phase,
-    } = req.body;
+    title,
+    entry,
+    mood,
+    symptoms,
+    cycleDay,
+    cycleLength,
+    phase,
+  } = req.body;
 
     if (!entry || typeof entry !== "string" || !entry.trim()) {
       return res.status(400).json({
@@ -78,13 +73,14 @@ router.post("/", async (req, res) => {
     }
 
     const journal = await createJournal({
-      entry: entry.trim(),
-      mood,
-      symptoms,
-      cycleDay,
-      cycleLength,
-      phase,
-    });
+    title: title?.trim() || '',
+    entry: entry.trim(),
+    mood,
+    symptoms,
+    cycleDay,
+    cycleLength,
+    phase,
+  });
 
     res.status(201).json(journal);
   } catch (error) {
@@ -100,13 +96,7 @@ router.post("/", async (req, res) => {
 // PUT /api/journal/:id
 router.put("/:id", async (req, res) => {
   try {
-    const id = Number(req.params.id);
-
-    if (!Number.isInteger(id) || id <= 0) {
-      return res.status(400).json({
-        error: "Invalid journal ID",
-      });
-    }
+    const id = req.params.id;
 
     const journal = await updateJournal(id, req.body);
 
@@ -130,13 +120,7 @@ router.put("/:id", async (req, res) => {
 // DELETE /api/journal/:id
 router.delete("/:id", async (req, res) => {
   try {
-    const id = Number(req.params.id);
-
-    if (!Number.isInteger(id) || id <= 0) {
-      return res.status(400).json({
-        error: "Invalid journal ID",
-      });
-    }
+    const id = req.params.id;
 
     const deleted = await deleteJournal(id);
 

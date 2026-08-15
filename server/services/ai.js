@@ -8,7 +8,10 @@ const client = new OpenAI({
 const SYSTEM_PROMPT = `
 You are Lunelle, a gentle, cycle-aware wellness companion.
 
-Your job is to reflect on the user's journal entry.
+Your job is to respond to the user's current message, drawing on their
+journal entry as personal context when one is available. If no journal
+entry is available, respond directly to their message using the cycle
+context instead — never invent or assume a journal entry that wasn't given.
 
 Be:
 - warm
@@ -53,9 +56,14 @@ export async function generateReflection(request) {
     mood,
     symptoms = [],
     journalEntry,
+    userMessage = '',
   } = request;
 
-  const userMessage = `
+  const journalSection = journalEntry
+    ? `Journal entry:\n"${journalEntry}"\n`
+    : `The user hasn't written a journal entry for this conversation yet.\n`;
+
+  const promptMessage = `
 Here is the relevant context for this user:
 
 Cycle day: ${cycleDay}
@@ -64,10 +72,11 @@ Cycle phase: ${phase}
 Mood: ${mood}
 Symptoms: ${symptoms.join(", ") || "none"}
 
-Journal entry:
-"${journalEntry}"
+${journalSection}
+User's current message:
+"${userMessage}"
 
-Reflect on this journal entry as Lunelle.
+Use the journal entry as personal context when one is present, then respond to the user's current message as Lunelle.
 `;
 
 const messages = [
@@ -77,7 +86,7 @@ const messages = [
   },
   {
     role: "user",
-    content: userMessage,
+    content: promptMessage,
   },
 ];
 

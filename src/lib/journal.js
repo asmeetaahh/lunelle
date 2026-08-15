@@ -1,4 +1,5 @@
-import { addDays } from './cycle'
+import { addDays, getCycleDayInfo, getCyclePhase } from './cycle'
+import { getCycleFromSettings, getCycleSettings } from './cycleSettings'
 
 // This module is the data layer for journaling. Every entry currently lives
 // in local React state (see src/pages/Journal.jsx); the shapes and helpers
@@ -26,11 +27,29 @@ export function createEntryId() {
 
 // A draft is a plain, editable copy of an entry (or a blank one for a new
 // entry) kept separate from the committed entries list so Cancel can discard
-// changes without mutating stored data.
+// changes without mutating stored data. Editing an existing entry preserves
+// whatever cycle context it already has (via the `{ ...entry }` spread); a
+// brand-new entry is stamped with the user's *current* cycle position, using
+// the same shared cycle helpers Home/Calendar/Profile already read from.
 export function createDraftFromEntry(entry) {
-  return entry
-    ? { ...entry }
-    : { id: null, title: '', body: '', mood: null, createdAt: new Date() }
+  if (entry) {
+    return { ...entry }
+  }
+
+  const cycle = getCycleFromSettings(getCycleSettings())
+  const { cycleDayNumber } = getCycleDayInfo(new Date(), cycle)
+  const phase = getCyclePhase(cycleDayNumber, cycle)
+
+  return {
+    id: null,
+    title: '',
+    body: '',
+    mood: null,
+    cycleDay: cycleDayNumber,
+    cycleLength: cycle.cycleLength,
+    phase,
+    createdAt: new Date(),
+  }
 }
 
 export function createSampleEntries() {

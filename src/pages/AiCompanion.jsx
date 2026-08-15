@@ -6,9 +6,11 @@ import SuggestedPrompts from '../components/ai-companion/SuggestedPrompts'
 import BackgroundDecor from '../components/decorative/BackgroundDecor'
 import BrandMark from '../components/ui/BrandMark'
 import Card from '../components/ui/Card'
-import { createInitialMessages, createMessageId, getCompanionResponse } from '../lib/aiCompanion'
-
-const RESPONSE_DELAY_MS = 600
+import {
+  createInitialMessages,
+  createMessageId,
+  reflectWithLunelle,
+} from '../lib/aiCompanion'
 
 function AiCompanion() {
   const [messages, setMessages] = useState(() => createInitialMessages())
@@ -20,20 +22,43 @@ function AiCompanion() {
     if (node) node.scrollTop = node.scrollHeight
   }, [messages, isThinking])
 
-  const sendMessage = (text) => {
-    const userMessage = { id: createMessageId(), role: 'user', text }
-    setMessages((current) => [...current, userMessage])
-    setIsThinking(true)
+  const sendMessage = async (text) => {
+  const userMessage = { id: createMessageId(), role: 'user', text }
 
-    window.setTimeout(() => {
-      const responseText = getCompanionResponse(text)
-      setMessages((current) => [
-        ...current,
-        { id: createMessageId(), role: 'assistant', text: responseText },
-      ])
-      setIsThinking(false)
-    }, RESPONSE_DELAY_MS)
+  setMessages((current) => [...current, userMessage])
+  setIsThinking(true)
+
+  try {
+    const data = await reflectWithLunelle(text)
+
+    const assistantText = data.suggestions?.length
+      ? `${data.response}\n\n${data.suggestions.map((suggestion) => `• ${suggestion}`).join('\n')}`
+      : data.response
+
+    setMessages((current) => [
+      ...current,
+      {
+        id: createMessageId(),
+        role: 'assistant',
+        text: assistantText,
+      },
+    ])
+  } catch (error) {
+    console.error('Lunelle AI error:', error)
+
+    setMessages((current) => [
+      ...current,
+      {
+        id: createMessageId(),
+        role: 'assistant',
+        text: "I'm having a little trouble connecting right now. Please try again in a moment. 💗",
+      },
+    ])
+  } finally {
+    setIsThinking(false)
   }
+}
+
 
   return (
     <div className="relative space-y-6">

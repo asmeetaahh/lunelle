@@ -2,11 +2,12 @@ import { supabase } from "./supabase.js";
 
 function formatJournal(journal) {
   if (!journal) {
-    return null;
+    return null
   }
 
   return {
     id: journal.id,
+    title: journal.title ?? '',
     entry: journal.entry,
     mood: journal.mood,
     symptoms: journal.symptoms ?? [],
@@ -15,7 +16,7 @@ function formatJournal(journal) {
     phase: journal.phase,
     createdAt: journal.created_at,
     updatedAt: journal.updated_at,
-  };
+  }
 }
 
 export async function getAllJournals() {
@@ -49,13 +50,14 @@ export async function createJournal(data) {
   const { data: journal, error } = await supabase
     .from("journals")
     .insert({
-      entry: data.entry,
-      mood: data.mood ?? null,
-      symptoms: data.symptoms ?? [],
-      cycle_day: data.cycleDay ?? null,
-      cycle_length: data.cycleLength ?? null,
-      phase: data.phase ?? null,
-    })
+    title: data.title ?? '',
+    entry: data.entry,
+    mood: data.mood ?? null,
+    symptoms: data.symptoms ?? [],
+    cycle_day: data.cycleDay ?? null,
+    cycle_length: data.cycleLength ?? null,
+    phase: data.phase ?? null,
+  })
     .select()
     .single();
 
@@ -68,6 +70,10 @@ export async function createJournal(data) {
 
 export async function updateJournal(id, data) {
   const updates = {};
+  
+  if (data.title !== undefined) {
+  updates.title = data.title
+  }
 
   if (data.entry !== undefined) {
     updates.entry = data.entry;

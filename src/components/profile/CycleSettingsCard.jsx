@@ -1,18 +1,10 @@
 import { Pencil } from 'lucide-react'
-import { useMemo, useState } from 'react'
-import { addDays, formatFullDate, toISODate } from '../../lib/cycle'
+import { useState } from 'react'
+import { formatFullDate } from '../../lib/cycle'
+import { getCycleSettings, saveCycleSettings } from '../../lib/cycleSettings'
 import Badge from '../ui/Badge'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
-
-function buildInitialSettings() {
-  const today = new Date()
-  return {
-    lastPeriodDate: toISODate(addDays(today, -20)),
-    cycleLength: 29,
-    periodLength: 5,
-  }
-}
 
 function parseLocalDate(isoDateString) {
   const [year, month, day] = isoDateString.split('-').map(Number)
@@ -20,10 +12,9 @@ function parseLocalDate(isoDateString) {
 }
 
 function CycleSettingsCard() {
-  const initial = useMemo(() => buildInitialSettings(), [])
-  const [settings, setSettings] = useState(initial)
+  const [settings, setSettings] = useState(() => getCycleSettings())
   const [isEditing, setIsEditing] = useState(false)
-  const [draft, setDraft] = useState(initial)
+  const [draft, setDraft] = useState(() => getCycleSettings())
 
   const startEditing = () => {
     setDraft(settings)
@@ -33,9 +24,10 @@ function CycleSettingsCard() {
   const cancelEditing = () => setIsEditing(false)
 
   const saveEditing = () => {
+    saveCycleSettings(draft)
     setSettings(draft)
     setIsEditing(false)
-  }
+}
 
   return (
     <Card>
