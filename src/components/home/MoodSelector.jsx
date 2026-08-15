@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { getTodaysMood, saveTodaysMood } from '../../lib/homeMood'
 import Card from '../ui/Card'
 
 const MOODS = [
@@ -11,10 +12,15 @@ const MOODS = [
 ]
 
 function MoodSelector() {
-  const [selected, setSelected] = useState(null)
+  const [selected, setSelected] = useState(() => getTodaysMood())
+
+  const handleSelect = (key) => {
+    setSelected(key)
+    saveTodaysMood(key)
+  }
 
   return (
-    <Card>
+    <Card id="mood-selector">
       <h2 className="text-xl font-bold text-ink">How are you feeling today?</h2>
 
       <div className="mt-6 grid grid-cols-3 gap-3">
@@ -24,7 +30,7 @@ function MoodSelector() {
             <button
               key={mood.key}
               type="button"
-              onClick={() => setSelected(mood.key)}
+              onClick={() => handleSelect(mood.key)}
               aria-pressed={isSelected}
               className={[
                 'flex flex-col items-center gap-2 rounded-2xl border px-3 py-4 transition-colors',

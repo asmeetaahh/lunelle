@@ -1,8 +1,11 @@
 import { MessageCircle, Wand2 } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
 
 function CompanionCard() {
+  const navigate = useNavigate()
+
   return (
     <Card className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
       <div className="flex items-start gap-4">
@@ -17,7 +20,7 @@ function CompanionCard() {
         </div>
       </div>
 
-      <Button icon={MessageCircle} className="shrink-0">
+      <Button icon={MessageCircle} className="shrink-0" onClick={() => navigate('/ai-companion')}>
         Talk to Lunelle
       </Button>
     </Card>

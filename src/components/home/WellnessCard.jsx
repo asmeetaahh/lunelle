@@ -1,8 +1,12 @@
 import { Wind } from 'lucide-react'
+import { useState } from 'react'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
+import BreathingExerciseModal from './BreathingExerciseModal'
 
 function WellnessCard() {
+  const [isBreathingOpen, setIsBreathingOpen] = useState(false)
+
   return (
     <Card>
       <h2 className="text-xl font-bold text-ink">Today&rsquo;s wellness</h2>
@@ -20,8 +24,12 @@ function WellnessCard() {
           </div>
         </div>
 
-        <Button className="shrink-0">Start</Button>
+        <Button className="shrink-0" onClick={() => setIsBreathingOpen(true)}>
+          Start
+        </Button>
       </div>
+
+      {isBreathingOpen && <BreathingExerciseModal onClose={() => setIsBreathingOpen(false)} />}
     </Card>
   )
 }
