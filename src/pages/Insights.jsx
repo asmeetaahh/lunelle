@@ -7,18 +7,11 @@ import PatternsCard from '../components/insights/PatternsCard'
 import PhaseInfoCard from '../components/insights/PhaseInfoCard'
 import UpcomingCycleCard from '../components/insights/UpcomingCycleCard'
 import { addDays, daysBetween, getCycleDayInfo, getCyclePhase } from '../lib/cycle'
-
-function buildSampleCycle(today) {
-  return {
-    lastPeriodStart: addDays(today, -20),
-    cycleLength: 29,
-    periodLength: 5,
-  }
-}
+import { getCycleFromSettings, getCycleSettings } from '../lib/cycleSettings'
 
 function Insights() {
   const today = useMemo(() => new Date(), [])
-  const cycle = useMemo(() => buildSampleCycle(today), [today])
+  const cycle = useMemo(() => getCycleFromSettings(getCycleSettings()), [])
 
   const { cycleDayNumber } = getCycleDayInfo(today, cycle)
   const phase = getCyclePhase(cycleDayNumber, cycle)
