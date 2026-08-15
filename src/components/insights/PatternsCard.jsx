@@ -1,7 +1,17 @@
 import { Sparkles } from 'lucide-react'
 import Card from '../ui/Card'
 
-function PatternsCard() {
+function getBodyText({ isLoading, error, patternText }) {
+  if (isLoading) return 'Looking through your recent journal entries…'
+  if (error) return error
+  if (patternText) return patternText
+
+  return "Keep journaling to discover your patterns. Once you've logged a few moods, Lunelle will gently reflect them back to you here."
+}
+
+function PatternsCard({ isLoading, error, patternText }) {
+  const bodyText = getBodyText({ isLoading, error, patternText })
+
   return (
     <Card>
       <div className="flex items-start gap-4">
@@ -10,11 +20,7 @@ function PatternsCard() {
         </div>
         <div>
           <h2 className="text-xl font-bold text-ink">Your patterns</h2>
-          <p className="mt-2 text-sm text-ink-muted">
-            You&rsquo;ve logged feeling stressed several times over the past couple of weeks, alongside
-            a few calmer, happier days too. Noticing these patterns can be a gentle first step &mdash;
-            no explanations needed.
-          </p>
+          <p className="mt-2 text-sm text-ink-muted">{bodyText}</p>
         </div>
       </div>
     </Card>

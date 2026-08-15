@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import BackgroundDecor from '../components/decorative/BackgroundDecor'
 import CurrentCycleSummaryCard from '../components/insights/CurrentCycleSummaryCard'
 import CycleProgressCard from '../components/insights/CycleProgressCard'
@@ -8,6 +8,8 @@ import PhaseInfoCard from '../components/insights/PhaseInfoCard'
 import UpcomingCycleCard from '../components/insights/UpcomingCycleCard'
 import { addDays, daysBetween, getCycleDayInfo, getCyclePhase } from '../lib/cycle'
 import { getCycleFromSettings, getCycleSettings } from '../lib/cycleSettings'
+import { describeMoodPattern, summarizeMoods } from '../lib/insights'
+import { fetchJournalEntries } from '../lib/journalApi'
 
 function Insights() {
   const today = useMemo(() => new Date(), [])
@@ -17,6 +19,35 @@ function Insights() {
   const phase = getCyclePhase(cycleDayNumber, cycle)
   const nextPeriodStart = addDays(cycle.lastPeriodStart, cycle.cycleLength)
   const daysUntilNextPeriod = daysBetween(today, nextPeriodStart)
+
+  const [journalEntries, setJournalEntries] = useState([])
+  const [isJournalLoading, setIsJournalLoading] = useState(true)
+  const [journalError, setJournalError] = useState('')
+
+  useEffect(() => {
+    let isMounted = true
+
+    const loadEntries = async () => {
+      try {
+        const entries = await fetchJournalEntries()
+        if (isMounted) setJournalEntries(entries)
+      } catch (error) {
+        console.error('Insights journal loading error:', error)
+        if (isMounted) setJournalError('Could not load your mood insights right now.')
+      } finally {
+        if (isMounted) setIsJournalLoading(false)
+      }
+    }
+
+    loadEntries()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  const moodSummary = useMemo(() => summarizeMoods(journalEntries), [journalEntries])
+  const patternText = useMemo(() => describeMoodPattern(moodSummary), [moodSummary])
 
   return (
     <div className="relative space-y-6">
@@ -39,8 +70,14 @@ function Insights() {
       <CycleProgressCard cycle={cycle} cycleDayNumber={cycleDayNumber} />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <MoodInsightsCard />
-        <PatternsCard />
+        <MoodInsightsCard
+          isLoading={isJournalLoading}
+          error={journalError}
+          moods={moodSummary.moods}
+          totalLoggedMoods={moodSummary.totalLoggedMoods}
+          windowDays={moodSummary.windowDays}
+        />
+        <PatternsCard isLoading={isJournalLoading} error={journalError} patternText={patternText} />
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
