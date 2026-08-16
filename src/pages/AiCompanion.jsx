@@ -11,9 +11,10 @@ import {
   createMessageId,
   reflectWithLunelle,
 } from '../lib/aiCompanion'
+import { getStoredMessages, saveMessages } from '../lib/aiCompanionHistory'
 
 function AiCompanion() {
-  const [messages, setMessages] = useState(() => createInitialMessages())
+  const [messages, setMessages] = useState(() => getStoredMessages() ?? createInitialMessages())
   const [isThinking, setIsThinking] = useState(false)
   const scrollRef = useRef(null)
 
@@ -21,6 +22,10 @@ function AiCompanion() {
     const node = scrollRef.current
     if (node) node.scrollTop = node.scrollHeight
   }, [messages, isThinking])
+
+  useEffect(() => {
+    saveMessages(messages)
+  }, [messages])
 
   const sendMessage = async (text) => {
   const userMessage = { id: createMessageId(), role: 'user', text }
@@ -51,7 +56,9 @@ function AiCompanion() {
       {
         id: createMessageId(),
         role: 'assistant',
-        text: "I'm having a little trouble connecting right now. Please try again in a moment. 💗",
+        text:
+          error.message ||
+          "I'm having a little trouble connecting right now. Please try again in a moment. 💗",
       },
     ])
   } finally {

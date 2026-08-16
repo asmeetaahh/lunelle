@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { generateReflection } from "../services/ai.js";
+import { generateReflection, isAiConfigured } from "../services/ai.js";
 
 import {
   getJournalById,
@@ -10,6 +10,15 @@ const router = Router();
 
 router.post("/chat", async (req, res) => {
   try {
+    if (!isAiConfigured) {
+      console.error(
+        "AI chat request received but Featherless is not configured (missing FEATHERLESS_API_KEY/FEATHERLESS_MODEL).",
+      );
+      return res.status(503).json({
+        error: "The AI companion isn't available right now. Please try again later.",
+      });
+    }
+
     const {
     journalId,
     cycleDay,
@@ -77,8 +86,30 @@ router.post("/chat", async (req, res) => {
   } catch (error) {
     console.error("AI error:", error);
 
+    const status = error?.status;
+
+    if (status === 401 || status === 403) {
+      // Auth failure talking to Featherless almost always means a bad/expired
+      // API key — a configuration problem, not something the user caused.
+      return res.status(503).json({
+        error: "The AI companion isn't available right now. Please try again later.",
+      });
+    }
+
+    if (status === 429) {
+      return res.status(429).json({
+        error: "Lunelle AI is a little busy right now. Please try again in a moment.",
+      });
+    }
+
+    if (typeof status === "number" && status >= 500) {
+      return res.status(502).json({
+        error: "Lunelle AI is temporarily unavailable. Please try again shortly.",
+      });
+    }
+
     res.status(500).json({
-      error: "Lunelle AI could not generate a reflection.",
+      error: "Lunelle AI could not generate a reflection. Please try again.",
     });
   }
 });

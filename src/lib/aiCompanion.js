@@ -22,26 +22,35 @@ export async function reflectWithLunelle(userMessage) {
 
   const journalId = localStorage.getItem('lunelle-last-journal-id')
 
-  const response = await fetch(`${API_BASE_URL}/api/ai/chat`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      journalId: journalId || undefined,
-      message: userMessage,
-      cycleDay,
-      cycleLength: cycle.cycleLength,
-      phase,
-      mood: null,
-      symptoms: [],
-    }),
-  })
+  let response
+  try {
+    response = await fetch(`${API_BASE_URL}/api/ai/chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        journalId: journalId || undefined,
+        message: userMessage,
+        cycleDay,
+        cycleLength: cycle.cycleLength,
+        phase,
+        mood: null,
+        symptoms: [],
+      }),
+    })
+  } catch (networkError) {
+    console.error('Lunelle AI network error:', networkError)
+    throw new Error(
+      "We're having trouble reaching Lunelle AI right now. Please check your connection and try again. 💗",
+      { cause: networkError },
+    )
+  }
 
-  const data = await response.json()
+  const data = await response.json().catch(() => null)
 
-  if (!response.ok) {
-    throw new Error(data.error || 'Lunelle AI could not respond.')
+  if (!response.ok || !data) {
+    throw new Error(data?.error || 'Lunelle AI could not respond. Please try again in a moment. 💗')
   }
 
   return data

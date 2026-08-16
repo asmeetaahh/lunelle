@@ -1,4 +1,4 @@
-import { CirclePlus } from 'lucide-react'
+import { CirclePlus, RotateCw } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import BackgroundDecor from '../components/decorative/BackgroundDecor'
 import JournalEmptyState from '../components/journal/JournalEmptyState'
@@ -41,23 +41,39 @@ function Journal() {
   const [isNewDraft, setIsNewDraft] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const [loadError, setLoadError] = useState(false)
 
   useEffect(() => {
-    const loadEntries = async () => {
+    const load = async () => {
       try {
-        setError('')
+        setLoadError(false)
         const journals = await fetchEntries()
         setEntries(journals)
-      } catch (loadError) {
-        console.error('Journal loading error:', loadError)
-        setError('Could not load your journal entries.')
+      } catch (loadErr) {
+        console.error('Journal loading error:', loadErr)
+        setLoadError(true)
       } finally {
         setIsLoading(false)
       }
     }
 
-    loadEntries()
+    load()
   }, [])
+
+  const retryLoad = async () => {
+    setIsLoading(true)
+    setLoadError(false)
+
+    try {
+      const journals = await fetchEntries()
+      setEntries(journals)
+    } catch (loadErr) {
+      console.error('Journal loading error:', loadErr)
+      setLoadError(true)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const sortedEntries = [...entries].sort(
     (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
@@ -206,6 +222,13 @@ function Journal() {
           onCancel={closeEditor}
           onDelete={deleteDraft}
         />
+      ) : loadError ? (
+        <div className="rounded-3xl border border-border bg-surface p-8 text-center">
+          <p className="text-sm text-ink-muted">Could not load your journal entries.</p>
+          <Button icon={RotateCw} onClick={retryLoad} className="mt-4">
+            Retry
+          </Button>
+        </div>
       ) : entries.length === 0 ? (
         <JournalEmptyState onNewEntry={openNewEntry} />
       ) : (

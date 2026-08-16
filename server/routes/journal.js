@@ -10,6 +10,53 @@ import {
 
 const router = Router();
 
+// Loose, type-level validation for the fields the frontend's Journal data
+// model (src/lib/journal.js) actually sends. Deliberately does not hardcode
+// the allowed mood keys here — that list already lives in JOURNAL_MOODS on
+// the frontend, and duplicating it server-side would create a second source
+// of truth that could drift.
+function isValidMood(mood) {
+  return mood === undefined || mood === null || (typeof mood === "string" && mood.trim().length > 0);
+}
+
+function isValidSymptoms(symptoms) {
+  return (
+    symptoms === undefined ||
+    symptoms === null ||
+    (Array.isArray(symptoms) && symptoms.every((item) => typeof item === "string"))
+  );
+}
+
+function isValidNullableNumber(value) {
+  return value === undefined || value === null || (typeof value === "number" && Number.isFinite(value));
+}
+
+function isValidNullableString(value) {
+  return value === undefined || value === null || typeof value === "string";
+}
+
+function validateJournalFields({ title, mood, symptoms, cycleDay, cycleLength, phase }) {
+  if (title !== undefined && typeof title !== "string") {
+    return "title must be a string";
+  }
+  if (!isValidMood(mood)) {
+    return "mood must be a non-empty string or null";
+  }
+  if (!isValidSymptoms(symptoms)) {
+    return "symptoms must be an array of strings";
+  }
+  if (!isValidNullableNumber(cycleDay)) {
+    return "cycleDay must be a number or null";
+  }
+  if (!isValidNullableNumber(cycleLength)) {
+    return "cycleLength must be a number or null";
+  }
+  if (!isValidNullableString(phase)) {
+    return "phase must be a string or null";
+  }
+  return null;
+}
+
 
 // GET /api/journal
 router.get("/", async (req, res) => {
@@ -72,6 +119,13 @@ router.post("/", async (req, res) => {
       });
     }
 
+    const validationError = validateJournalFields({ title, mood, symptoms, cycleDay, cycleLength, phase });
+    if (validationError) {
+      return res.status(400).json({
+        error: validationError,
+      });
+    }
+
     const journal = await createJournal({
     title: title?.trim() || '',
     entry: entry.trim(),
@@ -97,8 +151,26 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
   try {
     const id = req.params.id;
+    const { title, entry, mood, symptoms, cycleDay, cycleLength, phase } = req.body ?? {};
 
-    const journal = await updateJournal(id, req.body);
+    if (entry !== undefined && (typeof entry !== "string" || !entry.trim())) {
+      return res.status(400).json({
+        error: "Journal entry cannot be empty",
+      });
+    }
+
+    const validationError = validateJournalFields({ title, mood, symptoms, cycleDay, cycleLength, phase });
+    if (validationError) {
+      return res.status(400).json({
+        error: validationError,
+      });
+    }
+
+    const updates = { ...req.body };
+    if (entry !== undefined) updates.entry = entry.trim();
+    if (title !== undefined) updates.title = title.trim();
+
+    const journal = await updateJournal(id, updates);
 
     if (!journal) {
       return res.status(404).json({
