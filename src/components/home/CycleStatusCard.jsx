@@ -1,5 +1,6 @@
 import { CirclePlus, Heart } from 'lucide-react'
 import { useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Badge from '../ui/Badge'
 import Button from '../ui/Button'
 import Card from '../ui/Card'
@@ -7,6 +8,7 @@ import { daysBetween, getCycleDayInfo, getCyclePhase } from '../../lib/cycle'
 import { getCycleFromSettings, getCycleSettings } from '../../lib/cycleSettings'
 
 function CycleStatusCard() {
+  const navigate = useNavigate()
   const cycle = useMemo(
     () => getCycleFromSettings(getCycleSettings()),
     [],
@@ -83,7 +85,7 @@ function CycleStatusCard() {
         </div>
       </div>
 
-      <Button icon={CirclePlus} className="mt-8">
+      <Button icon={CirclePlus} className="mt-8" onClick={() => navigate('/calendar')}>
         Log today
       </Button>
     </Card>

@@ -6,7 +6,7 @@ function CurrentCycleSummaryCard({ cycleDayNumber, phase, cycleLength, daysUntil
     <Card>
       <div className="flex items-start justify-between gap-4">
         <h2 className="text-xl font-bold text-ink">Current cycle summary</h2>
-        <Badge>Sample data</Badge>
+        <Badge>Live data</Badge>
       </div>
 
       <div className="mt-6 grid grid-cols-2 gap-6 sm:grid-cols-4">
