@@ -469,10 +469,3 @@ The production application includes:
 - Production backend deployment
 
 🌸 **Live App:** https://lunelle.onrender.com
-
-
-## 16. Team
-
-Built with care during **Global Hack Week**.
-
-**Lunelle — a little space to track your cycle, understand yourself, and take care of you.** 🌙🌸
