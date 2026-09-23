@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "Lunelle",
+    "slug": "lunelle",
+    "scheme": "lunelle",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "platforms": ["ios", "android"],
+    "plugins": ["expo-router", "expo-secure-store", "expo-status-bar"]
+  }
+}

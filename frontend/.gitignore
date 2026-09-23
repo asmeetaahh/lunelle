@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native builds (this app is managed / prebuild-on-demand)
+/ios
+/android
+
+# Debug logs
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# Signing material
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# macOS
+.DS_Store
+
+# Environment — only .env.example is tracked
+.env
+.env.*
+!.env.example
