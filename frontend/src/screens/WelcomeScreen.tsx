@@ -6,9 +6,9 @@ import { Screen } from '@/components/ui/Screen'
 import { Text } from '@/components/ui/Text'
 import { useAuth } from '@/auth'
 
-// Placeholder for onboarding + sign-in. The real flow (and whether it is
-// Supabase Auth email/OTP/social) is defined by the backend contract; it ends
-// by calling `useAuth().signIn(session)`.
+// Placeholder for onboarding + sign-in UI. The auth mechanism itself is real —
+// Supabase Auth email/password, via `useAuth().signIn(email, password)` /
+// `.signUp(email, password)` — only the form to collect them isn't built yet.
 export default function WelcomeScreen() {
   const { startPreviewSession } = useAuth()
   const router = useRouter()

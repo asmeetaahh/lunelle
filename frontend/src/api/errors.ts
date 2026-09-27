@@ -1,18 +1,13 @@
-// Errors thrown by the API client. Callers distinguish them with `instanceof`.
-
-/** The backend answered, but with a non-2xx status. */
-export class ApiError extends Error {
-  readonly status: number
-  /** Parsed JSON body when there was one, otherwise the raw text, otherwise undefined. */
-  readonly body: unknown
-
-  constructor(status: number, body: unknown) {
-    super(extractMessage(body) ?? `Request failed with status ${status}`)
-    this.name = 'ApiError'
-    this.status = status
-    this.body = body
-  }
-}
+// Errors the API client throws that are NOT the contract's `ApiError`.
+//
+// `ApiError` itself — thrown for every non-2xx response, per `shared/api.ts`
+// rule 3 — is the one exported from `@shared/api`. It is not redefined here:
+// re-declaring it would create a second class a `catch` could mismatch against
+// (`instanceof` cares which module the class came from), and the whole point
+// of `/shared` is that both sides of the contract use the same one.
+//
+// The two below cover what the contract has no opinion on: failures that
+// happen before or around an HTTP exchange, not a documented response to one.
 
 /** No usable response: offline, DNS/TLS failure, or the request timed out. */
 export class NetworkError extends Error {
@@ -31,18 +26,4 @@ export class ApiConfigError extends Error {
     super(message)
     this.name = 'ApiConfigError'
   }
-}
-
-// PROVISIONAL: reads a human-readable message from `{ error }` / `{ message }`
-// bodies purely as a convenience for `error.message`. The V2 error envelope is
-// defined by the backend contract; replace this once that contract is available.
-function extractMessage(body: unknown): string | null {
-  if (typeof body !== 'object' || body === null) return null
-
-  const record = body as Record<string, unknown>
-  for (const key of ['error', 'message']) {
-    const value = record[key]
-    if (typeof value === 'string' && value.trim()) return value
-  }
-  return null
 }

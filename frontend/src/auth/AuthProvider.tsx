@@ -1,13 +1,11 @@
 // Owns the auth state for the whole app. Everything else asks `useAuth()`;
-// nothing else reads SecureStore or touches tokens.
+// nothing outside `supabaseClient.ts` touches Supabase or a token directly —
+// this provider calls only the functions that module exports.
 //
-// What is real here: restoring a persisted session on launch, persisting a new
-// one, clearing on sign-out, handing the token to the API client, and signing
-// out automatically when the API reports a 401.
-//
-// What is NOT here yet: the actual sign-in flow (Supabase Auth email/OTP/social
-// vs. a backend-issued token) and token refresh. Both depend on the backend
-// contract. When a real sign-in exists it should end by calling `signIn(session)`.
+// Session persistence, restore and refresh are all owned by supabase-js
+// itself (wired to SecureStore as its storage adapter in `supabaseClient.ts`)
+// — this provider's job is exposing that state as React context and handing
+// the API client a way to read/refresh the token and to sign out.
 
 import {
   createContext,
@@ -20,18 +18,34 @@ import {
   type ReactNode,
 } from 'react'
 
+import type { AuthSession } from '@shared/types'
+
 import { configureApiAuth } from '../api'
-import { clearSession, loadSession, saveSession, type Session } from './session'
+import {
+  getAccessToken,
+  getCurrentAuthSession,
+  onAuthStateChange,
+  refreshAccessToken,
+  signInWithPassword,
+  signOutSupabase,
+  signUpWithPassword,
+} from './supabaseClient'
 
 export type AuthStatus = 'loading' | 'signedOut' | 'signedIn'
+
+export interface SignUpResult {
+  session: AuthSession | null
+  needsEmailConfirmation: boolean
+}
 
 interface AuthContextValue {
   status: AuthStatus
   /** `null` when signed out or in a preview session (which has no token). */
-  session: Session | null
+  session: AuthSession | null
   /** True for the dev-only preview session: signed "in" for navigation, but with no token. */
   isPreview: boolean
-  signIn: (session: Session) => Promise<void>
+  signUp: (email: string, password: string) => Promise<SignUpResult>
+  signIn: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
   /** Dev builds only: enter the app shell without a backend. Never persisted, never sends a token. */
   startPreviewSession: () => void
@@ -41,48 +55,66 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<AuthStatus>('loading')
-  const [session, setSession] = useState<Session | null>(null)
+  const [session, setSession] = useState<AuthSession | null>(null)
   const [isPreview, setIsPreview] = useState(false)
 
-  // The API client reads the token through this ref so it always sees the
-  // latest session without the client being re-created or re-configured.
-  const sessionRef = useRef<Session | null>(null)
+  // The API client reads/refreshes the token through these refs so it always
+  // acts on the latest state without being re-created or re-configured.
+  const isPreviewRef = useRef(false)
 
-  const applySession = useCallback((next: Session | null, preview = false) => {
-    sessionRef.current = next
+  const applySession = useCallback((next: AuthSession | null, preview = false) => {
+    isPreviewRef.current = preview
     setSession(next)
     setIsPreview(preview)
     setStatus(next || preview ? 'signedIn' : 'signedOut')
   }, [])
 
+  // Restore on launch, then stay in sync with sign-in/sign-out/token refresh.
+  // supabase-js reads the persisted session from SecureStore itself; this
+  // effect only mirrors what it reports into React state.
   useEffect(() => {
     let cancelled = false
 
-    void loadSession().then((stored) => {
-      if (!cancelled) applySession(stored)
+    void getCurrentAuthSession().then((restored) => {
+      if (!cancelled && !isPreviewRef.current) applySession(restored)
+    })
+
+    const unsubscribe = onAuthStateChange((next) => {
+      if (!isPreviewRef.current) applySession(next)
     })
 
     return () => {
       cancelled = true
+      unsubscribe()
     }
   }, [applySession])
 
-  const signIn = useCallback(
-    async (next: Session) => {
-      await saveSession(next)
-      applySession(next)
-    },
-    [applySession],
-  )
+  const signUp = useCallback(async (email: string, password: string): Promise<SignUpResult> => {
+    const result = await signUpWithPassword(email, password)
+    // onAuthStateChange fires and updates state when a session comes back
+    // immediately (email confirmation off); nothing to do here either way.
+    return result
+  }, [])
+
+  const signIn = useCallback(async (email: string, password: string): Promise<void> => {
+    await signInWithPassword(email, password)
+    // onAuthStateChange fires next and updates state — not applied here too,
+    // so there is exactly one place session transitions are written.
+  }, [])
 
   const signOut = useCallback(async () => {
-    // Drop in-memory state first so the UI leaves the authenticated area
-    // immediately, even if clearing the keychain is slow or fails.
-    applySession(null)
+    if (isPreviewRef.current) {
+      applySession(null)
+      return
+    }
     try {
-      await clearSession()
+      await signOutSupabase()
+      // onAuthStateChange fires SIGNED_OUT and clears state.
     } catch (error) {
-      if (__DEV__) console.warn('Could not clear the stored session:', error)
+      // Sign-out failing (e.g. offline) must not strand the user signed in
+      // locally — drop local state regardless, same reasoning as before.
+      if (__DEV__) console.warn('Supabase sign-out failed; clearing local session anyway:', error)
+      applySession(null)
     }
   }, [applySession])
 
@@ -92,7 +124,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     configureApiAuth({
-      getAccessToken: () => sessionRef.current?.accessToken ?? null,
+      getAccessToken: () => (isPreviewRef.current ? Promise.resolve(null) : getAccessToken()),
+      refreshAccessToken: () => (isPreviewRef.current ? Promise.resolve(null) : refreshAccessToken()),
       onUnauthorized: () => {
         void signOut()
       },
@@ -101,8 +134,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [signOut])
 
   const value = useMemo<AuthContextValue>(
-    () => ({ status, session, isPreview, signIn, signOut, startPreviewSession }),
-    [status, session, isPreview, signIn, signOut, startPreviewSession],
+    () => ({ status, session, isPreview, signUp, signIn, signOut, startPreviewSession }),
+    [status, session, isPreview, signUp, signIn, signOut, startPreviewSession],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

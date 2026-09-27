@@ -1,20 +1,18 @@
 // The app's one configured API client. Import `api` from here; never call
 // `fetch` against the backend directly, and never read the base URL anywhere
 // but `config/env.ts`.
-//
-// Endpoint functions (e.g. `getToday()`) and their request/response types are
-// NOT defined yet — they come from the backend contract (`/shared`,
-// `API_CONTRACT.md`) and will live in this folder once it is available.
 
 import { env } from '../config/env'
 import { createApiClient } from './client'
 import { ApiConfigError } from './errors'
 
-export { ApiError, ApiConfigError, NetworkError } from './errors'
+export { ApiError, isApiError, API_ROUTES } from '@shared/api'
+export { ApiConfigError, NetworkError } from './errors'
 export type { ApiClient, RequestOptions } from './client'
 
 interface ApiAuthHooks {
-  getAccessToken: () => string | null
+  getAccessToken: () => Promise<string | null>
+  refreshAccessToken: () => Promise<string | null>
   onUnauthorized?: () => void
 }
 
@@ -39,6 +37,7 @@ function requireBaseUrl(): string {
 
 export const api = createApiClient({
   getBaseUrl: requireBaseUrl,
-  getAccessToken: () => authHooks?.getAccessToken() ?? null,
+  getAccessToken: () => authHooks?.getAccessToken() ?? Promise.resolve(null),
+  refreshAccessToken: () => authHooks?.refreshAccessToken() ?? Promise.resolve(null),
   onUnauthorized: () => authHooks?.onUnauthorized?.(),
 })
